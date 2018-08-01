@@ -24,6 +24,7 @@ class Folder(db.Model):
     Args:
         :param db.Model: SQLAlchemy Model
     """
+    # Member Variables
     id = db.Column(
         db.String(64), name='id', primary_key=True,
         default=funcs.generateSecureUUID
@@ -47,8 +48,8 @@ class Folder(db.Model):
         'Folder', backref='folder', lazy=True, passive_deletes=True
     )
 
+    # Fuctions
     def __repr__(self):
-
         """
         Representation function
 

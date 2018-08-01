@@ -31,6 +31,7 @@ class User(db.Model):
     Args:
         :param db.Model: The Model Base Class
     """
+    # Member Variables
     id = db.Column(
         db.String(64), name='id', primary_key=True,
         default=funcs.generateSecureUUID
@@ -66,10 +67,16 @@ class User(db.Model):
         'Device', backref='user', lazy=True, passive_deletes=True
     )
 
+    # Functions
     def __repr__(self):
         """
         Representation of this object as a string
+
+        Args:
             :param self: This object
+
+        Returns:
+            str: String representation of object
         """
         return '<User {}>'.format(self.name)
 

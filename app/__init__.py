@@ -30,5 +30,3 @@ else:
         sys.exit()
 
 db = SQLAlchemy()
-
-# from app import routes # noqa
