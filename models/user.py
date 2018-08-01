@@ -2,6 +2,8 @@
 
 This Module contains the User Model
 """
+import pyotp
+
 from app import db
 from models import funcs
 
@@ -64,6 +66,13 @@ class User(db.Model):
         'Device', backref='user', lazy=True, passive_deletes=True
     )
 
+    def __repr__(self):
+        """
+        Representation of this object as a string
+            :param self: This object
+        """
+        return '<User {}>'.format(self.name)
+
     def toHash(self):
         """
         Returns this object as a dict
@@ -89,3 +98,19 @@ class User(db.Model):
             'Organizations': [],
             'Object': 'profile'
         }
+
+    def verifyOTP(self, code):
+        """
+        Verify the passed in code against the user's current OTP.
+
+        Args:
+            :param1 self: This object
+            :param2 code: The passed in OTP
+
+        Returns:
+            bool: True if the codes match, false otherwise.
+        """
+        if(pyotp.TOTP(self.totp_secret).now() == code):
+            return True
+
+        return False
