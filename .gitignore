@@ -3,6 +3,8 @@ env/*
 
 # VS Code Settings
 .vscode/*
+.env/
+.envFile
 
 # Python stuff
 *.pyc
