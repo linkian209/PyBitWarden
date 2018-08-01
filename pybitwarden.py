@@ -17,4 +17,11 @@ Example:
     $ set FLASK_ENV=development
     $ flask run
 """
-from app import app # noqa
+from app import app
+from app import db
+from app import routes # noqa
+from models.user import User # noqa
+from models.folder import Folder # noqa
+
+
+db.init_app(app)

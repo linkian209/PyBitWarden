@@ -9,3 +9,6 @@ env/*
 # Python stuff
 *.pyc
 __pycache__/*
+
+# Development Server Stuff
+db/*

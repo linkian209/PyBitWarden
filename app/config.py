@@ -5,6 +5,8 @@ the environment type.
 """
 import os
 
+from app import app
+
 
 class Config(object):
     """
@@ -20,7 +22,7 @@ class Config(object):
     """
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite://:memory:'
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
 
 
 class ProductionConfig(Config):
@@ -45,13 +47,19 @@ class DevelopmentConfig(Config):
 
     Attributes:
         DEBUG (bool): Debugging is on
+
+        SQLALCHEMY_TRACK_MODIFICATIONS (bool): In development, disable
+        modification tracking
+
         SQLALCHEMY_DATABASE_URL (str): SQLITE3 URL
+
     Args:
         :param Config: Base Config Object
     """
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite://{}/db/pybitwarden.db'.format(
-        os.path.dirname(__file__)
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///{}\\db\\pybitwarden.db'.format(
+        os.path.dirname(app.instance_path)
     )
 
 

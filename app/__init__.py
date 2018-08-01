@@ -12,7 +12,6 @@ import sys
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-from app import routes # noqa
 from app import funcs
 
 app = Flask(__name__)
@@ -30,4 +29,6 @@ else:
         print(' ! Missing MySQL Environment Config! Exiting...')
         sys.exit()
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
+
+# from app import routes # noqa
