@@ -23,6 +23,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    JWT_KEY_PATH = '{}/db/jwt.key'.format(app.instance_path)
 
 
 class ProductionConfig(Config):
@@ -58,7 +59,7 @@ class DevelopmentConfig(Config):
     """
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///{}\\db\\pybitwarden.db'.format(
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///{}/db/pybitwarden.db'.format(
         os.path.dirname(app.instance_path)
     )
 
