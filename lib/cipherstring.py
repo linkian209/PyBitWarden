@@ -5,7 +5,7 @@ throws on an invalid parse
 """
 import re
 
-from lib.exceptions import InvalidCipherStringException
+from .exceptions import InvalidCipherStringException
 
 
 class CipherString():
@@ -65,11 +65,11 @@ class CipherString():
             str: The object as a string
         """
         retval = '{}.{}|{}'.format(
-            self.type, self.init_vector, self.cipher_text
+            self.type, self.init_vector.decode(), self.cipher_text.decode()
         )
 
         if(self.mac is not None):
-            retval += '|{}'.format(self.mac)
+            retval += '|{}'.format(self.mac.decode())
 
         return retval
 
@@ -87,7 +87,7 @@ class CipherString():
         Returns:
             CipherString: Parsed cipher string as a CipherString object
         """
-        pattern = re.compile('/\A(\d)\.([^|]+)\|(.+)\Z/')
+        pattern = re.compile('\A(\d)\.([^|]+)\|(.+)\Z')
 
         m = pattern.match(cipher_string)
 
@@ -95,13 +95,13 @@ class CipherString():
             cipher_text = None
             mac = None
 
-            if(len(m.group(2).split('|')) is 1):
-                cipher_text = m.group(2)
+            if(len(m.group(3).split('|')) is 1):
+                cipher_text = m.group(3).encode()
             else:
-                cipher_text, mac = m.group(2).split('|')
+                cipher_text, mac = [x.encode() for x in m.group(3).split('|')]
 
             return CipherString(
-                int(m.group(0)), m.group(1), cipher_text, mac
+                int(m.group(1)), m.group(2).encode(), cipher_text, mac
             )
 
         else:

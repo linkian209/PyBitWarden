@@ -6,9 +6,11 @@ will be used to test behaviors as well as create new ciphers.
 import base64
 import hashlib
 
-from Crypto import Cipher, Hash, Random
-from lib.cipherstring import CipherString
-from lib.exceptions import InvalidMACException
+from Crypto import Hash, Random
+from Crypto.Cipher import AES
+from Crypto.Util import Padding
+from .cipherstring import CipherString
+from .exceptions import InvalidMACException
 
 
 class Bitwarden():
@@ -25,11 +27,11 @@ class Bitwarden():
             :param salt: Salt used for hash
 
         Returns:
-            str: The hashed password.
+            bytes: The hashed password.
         """
         return hashlib.pbkdf2_hmac(
             'sha256', password.encode(), salt.encode(), 5000
-        ).hex()
+        )
 
     def makeEncryptionKey(key):
         """
@@ -41,10 +43,13 @@ class Bitwarden():
         Returns:
             str: The encryption key
         """
-        rand_bytes = Random.get_random_bytes(64)
         init_vector = Random.get_random_bytes(16)
+        rand_bytes = Random.get_random_bytes(64)
 
-        cipher = Cipher.AES.new(key, Cipher.AES.MODE_CBC, iv=init_vector)
+        if(not isinstance(key, bytes)):
+            key = key.encode()
+
+        cipher = AES.new(key, AES.MODE_CBC, iv=init_vector)
 
         cipher_text = cipher.encrypt(rand_bytes)
         return str(CipherString(
@@ -65,9 +70,7 @@ class Bitwarden():
         """
         key = Bitwarden.makeKey(password, salt)
 
-        return hashlib.pbkdf2_hmac(
-            'sha256', key.encode(), password.encode(), 5000
-        ).hex()
+        return hashlib.pbkdf2_hmac('sha256', key, password.encode(), 5000)
 
     def encrypt(plain_text, key, mac_key=None):
         """
@@ -81,24 +84,32 @@ class Bitwarden():
         Returns:
             CipherString: Encrypted plain text as a CipherString object
         """
-        init_vector = Random.random_bytes(16)
+        init_vector = Random.get_random_bytes(16)
 
-        cipher = Cipher.AES.new(key, Cipher.AES.MODE_CBC, iv=init_vector)
+        # We must pad plain text to match the initialization vector
+        if(not isinstance(plain_text, bytes)):
+            plain_text = plain_text.encode()
+
+        plain_text = Padding.pad(plain_text, len(init_vector))
+        cipher = AES.new(key, AES.MODE_CBC, iv=init_vector)
         cipher_text = cipher.encrypt(plain_text)
 
         mac = None
         cipher_type = CipherString.TYPE_AESCBC256_B64
+
         if(mac_key is not None):
             mac = Hash.HMAC.new(
-                mac_key, (init_vector + cipher_text).encode(),
+                mac_key,
+                init_vector + cipher_text,
                 digestmod=Hash.SHA256
-            )
-            cipher_type = CipherString.TYPE_AESCBC256_HMACSHA256
+            ).digest()
+            mac = base64.b64encode(mac)
+            cipher_type = CipherString.TYPE_AESCBC256_HMACSHA256_B64
 
-        return CipherString(
+        return str(CipherString(
             cipher_type, base64.b64encode(init_vector),
             base64.b64encode(cipher_text), mac=mac
-        )
+        ))
 
     def doubleHMACVerify(mac_key, mac1, mac2):
         """
@@ -115,11 +126,12 @@ class Bitwarden():
         digested_mac1 = Hash.HMAC.new(mac_key, msg=mac1, digestmod=Hash.SHA256)
         digested_mac2 = Hash.HMAC.new(mac_key, msg=mac2, digestmod=Hash.SHA256)
 
-        return digested_mac1 == digested_mac2
+        return digested_mac1.digest() == digested_mac2.digest()
 
     def decrypt(input_cipher_string, key, mac_key=None):
         """
-        Decrypt the inputed cipher text based on the encryption type.
+        Decrypt the inputted cipher text based on the encryption type.
+        Decrypted plain text will be unpadded before it is returned.
 
         Args:
             :param input_cipher_string: Cipher text to decrypt
@@ -133,31 +145,42 @@ class Bitwarden():
         Returns:
             str: Decrypted plain text
         """
-        cipher_string = CipherString.parse(input_cipher_string)
-        init_vector = base64.b64decode(cipher_string.iv)
+        cipher_string = CipherString.parseString(input_cipher_string)
+        init_vector = base64.b64decode(cipher_string.init_vector)
         cipher_text = base64.b64decode(cipher_string.cipher_text)
-        mac = cipher_string.mac if cipher_string.mac is not None else None
+
+        mac = None
+        if(cipher_string.mac is not None):
+            mac = base64.b64decode(cipher_string.mac)
 
         # AES-CBC-256
         if(cipher_string.type is CipherString.TYPE_AESCBC256_B64):
-            cipher = Cipher.AES.new(key, Cipher.AES.MODE_CBC, iv=init_vector)
-            plain_text = cipher.decrypt(cipher_text)
+            cipher = AES.new(key, AES.MODE_CBC, iv=init_vector)
+
+            print(cipher_text)
+            print(cipher.decrypt(cipher_text))
+
+            plain_text = Padding.unpad(
+                cipher.decrypt(cipher_text), len(init_vector)
+            ).decode()
 
         # AES-CBC-256 + HMAC-SHA256
         elif(cipher_string.type is CipherString.TYPE_AESCBC256_HMACSHA256_B64):
             # Verify HMAC first
             calc_mac = Hash.HMAC.new(
-                mac_key, msg=(init_vector + cipher_text).encode(),
+                mac_key, msg=(init_vector + cipher_text),
                 digestmod=Hash.SHA256
-            )
+            ).digest()
 
             if(not Bitwarden.doubleHMACVerify(mac_key, mac, calc_mac)):
                 # These MACs are not the same
                 raise InvalidMACException(mac, calc_mac)
 
             # Now decrypt cipher text
-            cipher = Cipher.AES.new(key, Cipher.AES.MODE_CBC, iv=init_vector)
-            plain_text = cipher.decrypt(cipher_text)
+            cipher = AES.new(key, AES.MODE_CBC, iv=init_vector)
+            plain_text = Padding.unpad(
+                cipher.decrypt(cipher_text), len(init_vector)
+            ).decode()
 
         # Other Cipher Types
         else:
