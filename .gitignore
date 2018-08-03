@@ -1,15 +1,16 @@
 # virtualenv
-env/*
+env/
 
 # VS Code Settings
-.vscode/*
+.vscode/
 .env/
 .envFile
+.DS_Store
 
 # Python stuff
 *.pyc
-__pycache__/*
-.pytest_cache/*
+__pycache__/
+.pytest_cache/
 
 # Development Server Stuff
 db/*
