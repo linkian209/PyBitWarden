@@ -1,8 +1,0 @@
-[
-  "test_bitwarden.py::testDoubleHMAC",
-  "test_bitwarden.py::testMakeKey",
-  "test_bitwarden.py::testMakeEncryptionKey",
-  "test_bitwarden.py::testHashPassword",
-  "test_bitwarden.py::testEncryptDecrypt",
-  "test_bitwarden.py::testEncryptDecryptMAC"
-]

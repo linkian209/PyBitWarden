@@ -1,4 +1,0 @@
-{
-  "test_bitwarden.py::testEncryptDecrypt": true,
-  "test_bitwarden.py::testEncryptDecryptMAC": true
-}
