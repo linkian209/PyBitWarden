@@ -9,6 +9,7 @@ env/*
 # Python stuff
 *.pyc
 __pycache__/*
+.pytest_cache/*
 
 # Development Server Stuff
 db/*

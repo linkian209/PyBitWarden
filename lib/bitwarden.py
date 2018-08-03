@@ -44,7 +44,8 @@ class Bitwarden():
             str: The encryption key
         """
         init_vector = Random.get_random_bytes(16)
-        rand_bytes = Random.get_random_bytes(64)
+
+        rand_bytes = Padding.pad(Random.get_random_bytes(64), AES.block_size)
 
         if(not isinstance(key, bytes)):
             key = key.encode()
@@ -90,7 +91,8 @@ class Bitwarden():
         if(not isinstance(plain_text, bytes)):
             plain_text = plain_text.encode()
 
-        plain_text = Padding.pad(plain_text, len(init_vector))
+        plain_text = Padding.pad(plain_text, AES.block_size)
+
         cipher = AES.new(key, AES.MODE_CBC, iv=init_vector)
         cipher_text = cipher.encrypt(plain_text)
 
@@ -143,7 +145,7 @@ class Bitwarden():
             MAC do not match, this exception will be raised
 
         Returns:
-            str: Decrypted plain text
+            bytes: Decrypted plain text in a bytes string
         """
         cipher_string = CipherString.parseString(input_cipher_string)
         init_vector = base64.b64decode(cipher_string.init_vector)
@@ -156,13 +158,11 @@ class Bitwarden():
         # AES-CBC-256
         if(cipher_string.type is CipherString.TYPE_AESCBC256_B64):
             cipher = AES.new(key, AES.MODE_CBC, iv=init_vector)
-
-            print(cipher_text)
-            print(cipher.decrypt(cipher_text))
+            plain_text = cipher.decrypt(cipher_text)
 
             plain_text = Padding.unpad(
-                cipher.decrypt(cipher_text), len(init_vector)
-            ).decode()
+                plain_text, AES.block_size
+            )
 
         # AES-CBC-256 + HMAC-SHA256
         elif(cipher_string.type is CipherString.TYPE_AESCBC256_HMACSHA256_B64):
@@ -178,9 +178,11 @@ class Bitwarden():
 
             # Now decrypt cipher text
             cipher = AES.new(key, AES.MODE_CBC, iv=init_vector)
+            plain_text = cipher.decrypt(cipher_text)
+
             plain_text = Padding.unpad(
-                cipher.decrypt(cipher_text), len(init_vector)
-            ).decode()
+                plain_text, AES.block_size
+            )
 
         # Other Cipher Types
         else:

@@ -2,7 +2,7 @@
 
 This module contains all of the tests for the Bitwarden class
 """
-import pytest # noqa
+import pytest
 import Crypto
 
 from PyBitWarden.lib.bitwarden import Bitwarden
@@ -109,10 +109,10 @@ def testEncryptDecrypt():
 
     cipher_string = Bitwarden.encrypt(plain_text, test_key)
 
-    assert plain_text == Bitwarden.decrypt(cipher_string, test_key)
+    assert plain_text == Bitwarden.decrypt(cipher_string, test_key).decode()
     assert plain_text == Bitwarden.decrypt(
         str(CipherString.parseString(cipher_string)), test_key
-    )
+    ).decode()
 
 
 def testEncryptDecryptMAC():
@@ -135,10 +135,10 @@ def testEncryptDecryptMAC():
 
     assert plain_text == Bitwarden.decrypt(
         cipher_string, test_key, mac_key1
-    )
+    ).decode()
     assert plain_text == Bitwarden.decrypt(
         str(CipherString.parseString(cipher_string)), test_key, mac_key1
-    )
+    ).decode()
 
     with pytest.raises(InvalidMACException):
         Bitwarden.decrypt(cipher_string, test_key, mac_key2)
