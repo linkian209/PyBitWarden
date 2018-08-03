@@ -5,9 +5,9 @@ This module contains all of the tests for the Bitwarden class
 import pytest
 import Crypto
 
-from PyBitWarden.lib.bitwarden import Bitwarden
-from PyBitWarden.lib.cipherstring import CipherString
-from PyBitWarden.lib.exceptions import InvalidMACException
+from lib.bitwarden import Bitwarden
+from lib.cipherstring import CipherString
+from lib.exceptions import InvalidMACException
 
 
 def testDoubleHMAC():

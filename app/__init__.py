@@ -16,6 +16,7 @@ from app import funcs
 
 app = Flask(__name__)
 
+
 # Get config based on Flask environment
 if(app.config['ENV'] == 'development'):
     app.config.from_object('app.config.DevelopmentConfig')

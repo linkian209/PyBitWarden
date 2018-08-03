@@ -20,8 +20,10 @@ Example:
 from app import app
 from app import db
 from app import routes # noqa
+from routes.icons import icons_blueprint
 from models.user import User # noqa
 from models.folder import Folder # noqa
 
 
+app.register_blueprint(icons_blueprint)
 db.init_app(app)
