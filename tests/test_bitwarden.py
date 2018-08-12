@@ -128,7 +128,7 @@ def testEncryptDecryptMAC():
     encrypt_key = Bitwarden.makeEncryptionKey(input_key)
     whole_key = Bitwarden.decrypt(encrypt_key, input_key)
     test_key = whole_key[:32]
-    mac_key1 = whole_key[32:]
+    mac_key1 = whole_key[32:64]
     mac_key2 = whole_key[:32]
 
     cipher_string = Bitwarden.encrypt(plain_text, test_key, mac_key1)

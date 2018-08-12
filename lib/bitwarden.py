@@ -4,11 +4,11 @@ This module contains all of the magic that the Bitwarden algorithms use. This
 will be used to test behaviors as well as create new ciphers.
 """
 import base64
-import hashlib
 
 from Crypto import Hash, Random
 from Crypto.Cipher import AES
 from Crypto.Util import Padding
+from Crypto.Protocol import KDF
 from .cipherstring import CipherString
 from .exceptions import InvalidMACException
 
@@ -29,8 +29,8 @@ class Bitwarden():
         Returns:
             bytes: The hashed password.
         """
-        return hashlib.pbkdf2_hmac(
-            'sha256', password.encode(), salt.encode(), 5000
+        return KDF.PBKDF2(
+            password, salt, dkLen=32, count=5000, hmac_hash_module=Hash.SHA256
         )
 
     def makeEncryptionKey(key):
@@ -71,7 +71,9 @@ class Bitwarden():
         """
         key = Bitwarden.makeKey(password, salt)
 
-        return hashlib.pbkdf2_hmac('sha256', key, password.encode(), 5000)
+        return KDF.PBKDF2(
+            key, password, count=5000, dkLen=32, hmac_hash_module=Hash.SHA256
+        )
 
     def encrypt(plain_text, key, mac_key=None):
         """

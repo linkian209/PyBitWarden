@@ -6,6 +6,7 @@ import pyotp
 
 from app import db
 from models import funcs
+from lib.bitwarden import Bitwarden
 
 
 class User(db.Model):
@@ -38,6 +39,7 @@ class User(db.Model):
     )
     name = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.string(128), nullable=False)
     email_verified = db.Column(
         db.Boolean, nullable=False, default=False
     )
@@ -121,3 +123,78 @@ class User(db.Model):
             return True
 
         return False
+
+    def decryptDataUsingMasterKey(self, data, master_key):
+        """
+        The user model contains an encrypted version of its encryption key.
+        First, decrypt the master key then decrypt the data.
+
+        Args:
+            :param self: This user
+            :param data: The cipher string that needs decrypted
+            :param master_key: The master password used to decrypt the
+            encryption key
+
+        Returns:
+            bytes: The decrypted plain text as a byte string
+        """
+        enc_key = Bitwarden.decrypt(
+            self.key.encode(), master_key[:32], mac_key=master_key[32:64]
+        )
+        return Bitwarden.decrypt(
+            data, enc_key[:32], mac_key=enc_key[32:64]
+        )
+
+    def encryptDataUsingMasterKey(self, data, master_key):
+        """
+        The user model contains an encrypted version of the encryption key.
+        First decrypt that key then encrypt the data
+
+        Args:
+            :param self: This user
+            :param data: The plain text to be encrypted
+            :param master_key: The master key
+
+        Returns:
+            str: The encrypted cipher string
+        """
+        enc_key = Bitwarden.decrypt(
+            self.key.encode(), master_key[:32], mac_key=master_key[32:64]
+        )
+        return Bitwarden.encrypt(
+            data, enc_key[:32], mac_key=enc_key[32:64]
+        )
+
+    def comparePasswordHash(self, hash):
+        """
+        Compares if the user's password hash matches the inputed one
+
+        Args:
+            :param self: The user
+            :param hash: The hash to compare against
+
+        Returns:
+            bool: True if the hashes are the same, false otherwise.
+        """
+        return funcs.constantTimeCompare(self.password_hash, hash)
+
+    def updateMasterKey(self, old_password, new_password):
+        """
+        This function updates the master key for the random encryption key. We
+        want to preserve this random encryption key. So we will decrypt with
+        the old key, then recrypt with the new key.
+
+        Args:
+            :param self: This user
+            :param old_password: The old master password
+            :param new_password: The new master password
+        """
+        enc_key = Bitwarden.decrypt(
+            self.key, Bitwarden.makeKey(old_password, self.email), None
+        )
+        self.key = Bitwarden.encrypt(
+            enc_key, Bitwarden.makeKey(new_password, self.email)
+        )
+
+        self.password_hash = Bitwarden.hashPassword(new_password, self.email)
+        self.security_stamp = funcs.generateSecureUUID()
