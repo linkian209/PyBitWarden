@@ -24,7 +24,7 @@ def constantTimeCompare(val1, val2):
     length. It will return false immediately if they are not the same length.
 
     This function has a margin of error of around 6 microseconds
-    
+
     Args:
         :param val1: The first value to compare
         :param val2: The second value to compare

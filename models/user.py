@@ -7,6 +7,7 @@ import pyotp
 from app import db
 from models import funcs
 from lib.bitwarden import Bitwarden
+from sqlalchemy import sql
 
 
 class User(db.Model):
@@ -28,6 +29,8 @@ class User(db.Model):
         folders (relationship): Folders owned by user
         cipers (relationship): Ciphers owned by user
         devices (relationship): Devices owned by user
+        create_date (DateTime): Time when this user was created
+        update_date (DateTime): The timestamp of the last update
 
     Args:
         :param db.Model: The Model Base Class
@@ -67,6 +70,11 @@ class User(db.Model):
     )
     devices = db.relationship(
         'Device', backref='user', lazy=True, passive_deletes=True
+    )
+    create_date = db.Column(db.DateTime, server_default=sql.func.now())
+    update_date = db.Column(
+        db.DateTime, default=sql.func.now(),
+        onupdate=sql.func.now()
     )
 
     # Functions
