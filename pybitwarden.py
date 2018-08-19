@@ -21,9 +21,13 @@ from app import app
 from app import db
 from app import routes # noqa
 from routes.icons import icons_blueprint
+from routes.identity import identity_blueprint
 from models.user import User # noqa
 from models.folder import Folder # noqa
+from models.cipher import Cipher # noqa
+from models.device import Device # noqa
 
 
 app.register_blueprint(icons_blueprint)
+app.register_blueprint(identity_blueprint)
 db.init_app(app)

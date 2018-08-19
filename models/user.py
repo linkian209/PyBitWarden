@@ -42,7 +42,7 @@ class User(db.Model):
     )
     name = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(128), nullable=False)
-    password_hash = db.Column(db.string(128), nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
     email_verified = db.Column(
         db.Boolean, nullable=False, default=False
     )
@@ -71,7 +71,7 @@ class User(db.Model):
     devices = db.relationship(
         'Device', backref='user', lazy=True, passive_deletes=True
     )
-    create_date = db.Column(db.DateTime, server_default=sql.func.now())
+    create_date = db.Column(db.DateTime(), server_default=sql.func.now())
     update_date = db.Column(
         db.DateTime, default=sql.func.now(),
         onupdate=sql.func.now()
@@ -173,18 +173,18 @@ class User(db.Model):
             data, enc_key[:32], mac_key=enc_key[32:64]
         )
 
-    def comparePasswordHash(self, hash):
+    def comparePasswordHash(self, in_hash):
         """
         Compares if the user's password hash matches the inputed one
 
         Args:
             :param self: The user
-            :param hash: The hash to compare against
+            :param in_hash: The hash to compare against
 
         Returns:
             bool: True if the hashes are the same, false otherwise.
         """
-        return funcs.constantTimeCompare(self.password_hash, hash)
+        return funcs.constantTimeCompare(self.password_hash, in_hash)
 
     def updateMasterKey(self, old_password, new_password):
         """

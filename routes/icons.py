@@ -21,5 +21,4 @@ def icon(domain):
     Returns:
         redirect: Redirects to the website's favicon
     """
-    print(domain)
     return redirect('{}/favicon.ico'.format(domain))

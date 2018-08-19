@@ -60,7 +60,7 @@ def testConstantTimeCompareIsConstantTime():
     test_val1 = 'Test_val'
     test_val2 = 'tesT_val'
     test_val3 = 'test_vAl'
-    time_margin = .000006
+    time_margin = .000008
 
     startTime = time.time()
     test_funcs.constantTimeCompare(correct_val, correct_val)
@@ -80,3 +80,30 @@ def testConstantTimeCompareIsConstantTime():
     test_funcs.constantTimeCompare(correct_val, test_val3)
     test_time = time.time() - startTime
     assert abs(test_time - base_line) <= time_margin
+
+
+def testUppercaseFirstHash():
+    """
+    This test verifies that the uppercaseFirstHash function correctly formats
+    the return data.
+    """
+    test_data = {'test1': 1, 'TeSt2': 2, 'TEST3': 3, 'tesT4': 4}
+    proper_data = {'Test1': 1, 'Test2': 2, 'Test3': 3, 'Test4': 4}
+
+    reformatted_data = test_funcs.uppercaseFirstHash(test_data)
+
+    assert reformatted_data == proper_data
+
+
+def testUppercaseFirstHashRaisesTypeError():
+    """
+    This test verifies that uppercaseFirstHash raises the TypeError if a value
+    that is not a dict is inputted
+    """
+    with pytest.raises(TypeError):
+        test_funcs.uppercaseFirstHash(1)
+        test_funcs.uppercaseFirstHash('a')
+        test_funcs.uppercaseFirstHash([1, 2, 3])
+        test_funcs.uppercaseFirstHash(('1', 2))
+        test_funcs.uppercaseFirstHash(True)
+        test_funcs.uppercaseFirstHash(None)

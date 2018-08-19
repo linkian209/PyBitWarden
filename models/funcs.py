@@ -46,3 +46,24 @@ def constantTimeCompare(val1, val2):
         result |= x ^ y
 
     return result == 0
+
+
+def uppercaseFirstHash(data):
+    """
+    This function takes the inputted data and formats all of the keys to be
+    lowercase with the first letter capitalized. If the input is anything but a
+    dictionary, it simply raises a TypeError.
+
+    Args:
+        :param data: The data to be reformatted
+
+    Raises:
+        TypeError when data is not a dict.
+
+    Returns:
+        dict: The reformatted dictionary
+    """
+    if(not isinstance(data, dict)):
+        raise TypeError
+
+    return {k.lower().capitalize(): v for k, v in data.items()}

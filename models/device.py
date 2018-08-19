@@ -43,7 +43,7 @@ class Device(db.Model):
         db.String(64), nullable=True
     )
     access_token = db.Column(
-        db.string(256), nullable=True
+        db.String(256), nullable=True
     )
     token_expires_at = db.Column(
         db.DateTime, nullable=True
